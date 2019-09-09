@@ -3,8 +3,9 @@ import math
 
 def main():
     # ep1 = Ep1Ex1(4939950, 10, 25, 50)
-    ep1 = Ep1Ex1(8992902, 10, 27, 75)
-    print(ep1.params.attenuation)
+    # ep1 = Ep1Ex1(9381426, 10, 27, 75)
+    # print(ep1.params.attenuation)
+    ep1 = Ep1Ex1(9020002, 10, 27, 75)
     ep1.item_a()
     ep1.item_b()
     ep1.item_c()
@@ -36,6 +37,9 @@ class Ep1Ex1Params:
         self.generator_resistance = generator_resistance
         self.line_resistance = line_resistance
         self.calculate_init_params()
+        print("NUSP: ", nusp)
+        print()
+        self.print_init_params()
 
     def calculate_init_params(self):
         self.p = self.nusp % 10
@@ -47,8 +51,8 @@ class Ep1Ex1Params:
         self.calculate_line_length()
 
     def calculate_attenuation(self):
-        self.attenuation = (7 + self.m/10 + self.n/100 + self.p/1000)*1E-3
-        # self.attenuation = (5 + self.m/10 + self.n/100 + self.p/1000)*1E-3
+        # self.attenuation = (7 + self.m/10 + self.n/100 + self.p/1000)*1E-3
+        self.attenuation = (5 + self.m/10 + self.n/100 + self.p/1000)*1E-3
 
     def calculate_capacitance(self):
         self.capacitance = 1 + self.m/10 + self.n/100 + self.p/1000
@@ -61,16 +65,18 @@ class Ep1Ex1Params:
         self.line_length = (20 + self.m + self.n/10 + self.p/100)
 
     def print_init_params(self):
+        print("PARAMETROS QUE DEPENDEM DO NUSP")
         print("m: ", self.m)
         print("n: ", self.n)
         print("p: ", self.p)
         print("capacitance: ", self.capacitance)
         print("propagation_speed: ", self.propagation_speed)
         print("line_length: ", self.line_length)
+        print()
 
 
 class Ep1Ex1:
-    params = Ep1Ex1Params(0, 0, 0, 0)
+    params = 0
 
     equivalent_resistance = 0
     generator_coefficient = 0
@@ -95,8 +101,10 @@ class Ep1Ex1:
 
     def item_a(self):
         print("ITEM A: ")
-        self.initial_time = 0.2*1E-6
+        print("Resistencia equivalente: ", self.equivalent_resistance)
         print("O v1 antes de 0.2us é: ", self.v_1_item_a(0))
+        print("Coef. de relfexao do capacitor, pL =  ", -1)
+        print("Coef. de relfexao do gerador, pg =  ", self.generator_coefficient)
         print("O v1 imediatamente depois de 0.2us é: ", self.v_1_item_a(0.2*1E-6))
         print()
 
@@ -107,18 +115,21 @@ class Ep1Ex1:
         print()
 
     def item_c(self):
-        print("ITEM C: ")
-        print("SIMULAR CIRCUITO")
-        print()
+        return
 
     def item_d(self):
         print("ITEM D: ")
         print("A constante de tempo é: ", self.params.capacitance*self.params.line_resistance)
+        print("Req*Eg =  ", self.equivalent_resistance*self.params.generator_voltage)
+        print("Req *Eg*(1+pg) = ", self.equivalent_resistance*self.params.generator_voltage*(1+self.generator_coefficient))
+        print("V(0,39999us) = ", self.v_1_item_a(0.39999*1E-6))
         print()
 
     def item_e(self):
         print("ITEM E: ")
 
+        print("Atenuação: ", self.params.attenuation)
+        # self.params.propagation_speed = 2*1E8
         self.new_capacitance = 1/(self.params.propagation_speed*self.params.line_resistance)
         self.new_inductance = self.params.line_resistance/self.params.propagation_speed
         self.new_resistance = self.params.attenuation*self.params.line_resistance
@@ -127,11 +138,12 @@ class Ep1Ex1:
         print("[H/m] L =  ", self.new_inductance)
         print("[O/m] R =  ", self.new_resistance)
         print("[S/m] G =  ", self.new_conductance)
+        print("")
+        print()
 
     def v_1_item_a(self, t):
         initial_time = 0.2*1E-6
         linear_coef = self.equivalent_resistance*self.params.generator_voltage
-
         b = (1+self.generator_coefficient)*linear_coef
         c = b*(1-2*math.exp(-(t-initial_time)/(self.params.line_resistance*self.params.capacitance)))
 
